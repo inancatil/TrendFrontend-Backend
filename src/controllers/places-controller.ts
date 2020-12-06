@@ -81,6 +81,7 @@ export const createPlace = async (
   if (!validationError.isEmpty()) {
     return next(new HttpError("Invalid data sent", 422));
   }
+
   const { title, description, address, creator } = req.body;
   const createdPlace = new Place({
     title,

@@ -8,8 +8,8 @@ import HttpError, { ICustomErrorHandler } from "./models/http-error";
 const app = express();
 
 app.use(bodyParser.json());
-app.use("/api/places", placesRouter);
 app.use("/api/users", usersRouter);
+app.use("/api/places", placesRouter);
 
 app.use((req: Request, res: Response, next: NextFunction) => {
   const error = new HttpError("Couldnt find this route", 404);
