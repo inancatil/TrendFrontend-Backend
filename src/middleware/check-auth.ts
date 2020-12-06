@@ -1,6 +1,5 @@
 import { NextFunction, Response, Request } from "express";
 import { sign, verify } from "jsonwebtoken";
-import { IGetUserAuthInfoRequest } from "../DTO/request-objects";
 import HttpError from "../models/http-error";
 
 export default function (req: Request, res: Response, next: NextFunction) {
