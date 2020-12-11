@@ -1,17 +1,19 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
-import { IPlace } from "./place-model";
+import mongoose, { Schema, Document } from "mongoose";
 import uniqueValidator from "mongoose-unique-validator";
+import { IBlogPost } from "./blogPost-model";
 export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
-  places: IPlace[];
+  blogPosts: mongoose.Types.ObjectId[];
 }
 const userSchema: Schema = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true, minlength: 6 },
-  places: [{ type: mongoose.Types.ObjectId, required: true, ref: "Place" }],
+  blogPosts: [
+    { type: mongoose.Types.ObjectId, required: true, ref: "BlogPost" },
+  ],
 });
 
 userSchema.plugin(uniqueValidator);

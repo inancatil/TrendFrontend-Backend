@@ -101,16 +101,16 @@ export const createPlace = async (
     return next(new HttpError("Couldnt find user, Creating place failed", 404));
   }
 
-  try {
-    const session = await mongoose.startSession();
-    session.startTransaction();
-    await createdPlace.save({ session });
-    user.places.push(createdPlace);
-    await user.save({ session });
-    await session.commitTransaction();
-  } catch (err) {
-    return next(new HttpError("Creating place failed", 500));
-  }
+  // try {
+  //   const session = await mongoose.startSession();
+  //   session.startTransaction();
+  //   await createdPlace.save({ session });
+  //   user.places.push(createdPlace);
+  //   await user.save({ session });
+  //   await session.commitTransaction();
+  // } catch (err) {
+  //   return next(new HttpError("Creating place failed", 500));
+  // }
 
   res.status(201).json({ createdPlace });
 };
@@ -165,24 +165,24 @@ export const deletePlace = async (
   if (!place) {
     return next(new HttpError("Place couldnt found", 404));
   }
-  try {
-    const session = await mongoose.startSession();
-    session.startTransaction();
+  // try {
+  //   const session = await mongoose.startSession();
+  //   session.startTransaction();
 
-    place?.deleteOne({ session });
-    //#region without populate way
-    const user: IUser | null = await User.findById(place.creator);
-    user?.places.splice(
-      user?.places.findIndex((place) => place._id === placeId),
-      1
-    );
-    await user?.save({ session });
-    //#endregion
-    await session.commitTransaction();
-  } catch (error) {
-    return next(
-      new HttpError("Something went wrong, couldnt delete place", 500)
-    );
-  }
+  //   place?.deleteOne({ session });
+  //   //#region without populate way
+  //   const user: IUser | null = await User.findById(place.creator);
+  //   user?.places.splice(
+  //     user?.places.findIndex((place) => place._id === placeId),
+  //     1
+  //   );
+  //   await user?.save({ session });
+  //   //#endregion
+  //   await session.commitTransaction();
+  // } catch (error) {
+  //   return next(
+  //     new HttpError("Something went wrong, couldnt delete place", 500)
+  //   );
+  // }
   res.status(200).json({ message: "place deleted" });
 };

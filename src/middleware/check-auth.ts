@@ -8,9 +8,9 @@ export default function (req: Request, res: Response, next: NextFunction) {
     if (!token) {
       return next(new HttpError("Auth failed. Login first.", 401));
     }
-    verify(token, "supersecret_dont_share");
+    verify(token, `${process.env.JWT_KEY}`);
     //???????????????????????????????????????
-    // const decodedToken: any = verify(token, "supersecret_dont_share");
+    // const decodedToken: any = verify(token, `${process.env.JWT_KEY}`);
     // req.body.userData = {
     //   userId: decodedToken.userId,
     //   email: decodedToken.email,
