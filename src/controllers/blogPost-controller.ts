@@ -24,7 +24,7 @@ export const getBlogPosts = async (
     return next(new HttpError("Couldnt find place", 404));
   }
   return res.json({
-    users: blogPosts.map((post) => post.toObject({ getters: true })),
+    blogPosts: blogPosts.map((post) => post.toObject({ getters: true })),
   });
 };
 
@@ -92,5 +92,5 @@ export const createBlogPost = async (
     return next(new HttpError(err, 500));
   }
 
-  res.status(201).json({ createdBlogPost });
+  res.status(201).json({ blogPost:createdBlogPost.toObject({getters:true}) });
 };
