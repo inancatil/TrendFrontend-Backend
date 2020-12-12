@@ -5,10 +5,10 @@ export interface IBlogPost extends Document {
   title: string;
   content: string;
   imageUrl: string;
-  author: string;
+  author: mongoose.Types.ObjectId;
   date: string;
   tags: string[];
-  categoryId: string;
+  categoryId: mongoose.Types.ObjectId;
 }
 const blogPostSchema: Schema = new Schema({
   title: { type: String, required: true },
