@@ -3,7 +3,9 @@ import { sign, verify } from "jsonwebtoken";
 import HttpError from "../models/http-error";
 
 export default function (req: Request, res: Response, next: NextFunction) {
+  if(req.method==="OPTIONS") return next()
   try {
+    //console.log(req.headers)
     const token = req.headers.authorization?.split(" ")[1];
     if (!token) {
       return next(new HttpError("Auth failed. Login first.", 401));

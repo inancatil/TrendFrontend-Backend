@@ -40,7 +40,7 @@ export const createCategory = async (
   if (!validationError.isEmpty()) {
     return next(new HttpError("Invalid data sent", 422));
   }
-
+  
   const { name } = req.body;
   const createdCategory = new Category({
     name,
@@ -53,7 +53,7 @@ export const createCategory = async (
     return next(new HttpError("Creating place failed", 500));
   }
 
-  res.status(201).json({ createdCategory });
+  res.status(201).json({ category:createdCategory.toObject({getters:true}) });
 };
 
 export const deleteCategory = async (
