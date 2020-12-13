@@ -7,6 +7,7 @@ import Category, { ICategory } from "../models/category-model";
 import User, { IUser } from "../models/user-model";
 import BlogPost, { IBlogPost } from "../models/blogPost-model";
 import { decodeBase64 } from "bcryptjs";
+import { correctResponse } from "../utils";
 
 export const getCategories = async (
   req: Request,
@@ -16,7 +17,7 @@ export const getCategories = async (
   let categories;
   try {
     //users = await User.find({}, "email name"); //sadece email pass döner
-    categories = await Category.find({}); //pass dışındakiler döner
+    categories = await Category.find({}, "-__v"); //pass dışındakiler döner
   } catch (_) {
     return next(new HttpError("Something went wrong, Couldnt find place", 500));
   }
@@ -24,10 +25,11 @@ export const getCategories = async (
   if (!categories) {
     return next(new HttpError("Couldnt find place", 404));
   }
-  return res.json({
-    categories: categories.map((category) =>
-      category.toObject({ getters: true })
-    ),
+  return res.status(200).json({
+    categories: categories.map((category) => {
+      console.log(correctResponse(category.toObject({ getters: true })))
+      return correctResponse(category.toObject({ getters: true }))
+    })
   });
 };
 
@@ -40,7 +42,7 @@ export const createCategory = async (
   if (!validationError.isEmpty()) {
     return next(new HttpError("Invalid data sent", 422));
   }
-  
+
   const { name } = req.body;
   const createdCategory = new Category({
     name,
@@ -53,7 +55,7 @@ export const createCategory = async (
     return next(new HttpError("Creating place failed", 500));
   }
 
-  res.status(201).json({ category:createdCategory.toObject({getters:true}) });
+  res.status(201).json({ category: correctResponse(createdCategory.toObject({ getters: true })) });
 };
 
 export const deleteCategory = async (
@@ -84,26 +86,6 @@ export const deleteCategory = async (
     return next(new HttpError("Place couldnt found", 404));
   }
 
-  let users: IUser[] | null;
-  let blogIds = blogPosts.map((post) => post._id);
-  try {
-    users = await User.find({
-      blogPosts: {
-        $all: blogIds,
-      },
-    });
-  } catch (error) {
-    return next(
-      new HttpError("Something went wrong, couldnt delete place from user", 500)
-    );
-  }
-  if (!users) {
-    return next(new HttpError("Error at deleting from user collection", 404));
-  }
-
-  console.log(category);
-  console.log(blogPosts);
-  console.log(users);
 
   //User ve blogpost tablosundan category e sahip olanlar da silince
   try {
@@ -112,17 +94,7 @@ export const deleteCategory = async (
 
     category?.deleteOne({ session });
 
-    //#region without populate way
-    users.forEach(async (user) => {
-      const userSchema: IUser = user;
-      userSchema?.blogPosts.sort().splice(
-        userSchema?.blogPosts.findIndex(
-          (post) => post.toString() === categoryId
-        ),
-        category?.blogPosts.length
-      );
-      await userSchema?.save({ session });
-    });
+    await BlogPost.updateMany({ categoryId }, { categoryId: null }, { session })
 
     //#endregion
     await session.commitTransaction();
@@ -131,7 +103,7 @@ export const deleteCategory = async (
       new HttpError("Something went wrong, couldnt delete place", 500)
     );
   }
-  res.status(200).json({ message: "place deleted" });
+  res.status(200).json({ message: "category deleted", category: correctResponse(category.toObject({ getters: true })) });
 };
 
 //UPDATE YAZILACAK

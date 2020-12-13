@@ -20,6 +20,6 @@ blogPostRouter.post("/", blogPostController.createBlogPost);
 //   placesController.updatePlace
 // );
 
-//blogPostRouter.delete("/:pid", blogPostController.deleteCategory);
+blogPostRouter.delete("/:bpid", blogPostController.deleteBlogPostById);
 
 export default blogPostRouter;

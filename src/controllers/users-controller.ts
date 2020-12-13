@@ -4,6 +4,7 @@ import { validationResult } from "express-validator";
 import User, { IUser } from "../models/user-model";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import { correctResponse } from "../utils";
 
 export const getUsers = async (
   req: Request,
@@ -22,7 +23,7 @@ export const getUsers = async (
     return next(new HttpError("Couldnt find place", 404));
   }
   return res.json({
-    users: users.map((user) => user.toObject({ getters: true })),
+    users: users.map((user) => correctResponse(user.toObject({ getters: true }))),
   });
 };
 
