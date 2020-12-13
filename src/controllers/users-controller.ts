@@ -60,7 +60,7 @@ export const signup = async (
     name,
     email,
     password: hashedPassword,
-    places: [],
+    blogPosts: [],
   });
   try {
     await createdUser.save();
@@ -80,7 +80,10 @@ export const signup = async (
   }
   res
     .status(201)
-    .json({ userId: createdUser.id, email: createdUser.email, token });
+    .json({
+      userData: { id: createdUser._id, name: createdUser.name, email: createdUser.email, blogPosts: createdUser.blogPosts },
+      authData: { token, userId: createdUser._id }
+    });
 };
 
 export const login = async (
@@ -93,22 +96,22 @@ export const login = async (
   try {
     user = await User.findOne({ email });
   } catch (error) {
-    return next(new HttpError("Couldnt find user or passs is wrong", 500));
+    return next(new HttpError("Couldnt find user or password is wrong", 500));
   }
 
   if (!user) {
-    return next(new HttpError("login fail or passs is wrong", 401));
+    return next(new HttpError("login fail or password is wrong", 401));
   }
 
   let isValidPass: boolean;
   try {
     isValidPass = await bcrypt.compare(password, user.password);
   } catch (error) {
-    return next(new HttpError("login fail or passs is wrong", 401));
+    return next(new HttpError("login fail or password is wrong", 401));
   }
 
   if (!isValidPass) {
-    return next(new HttpError("login fail or passs is wrong", 401));
+    return next(new HttpError("login fail or password is wrong", 401));
   }
 
   let token: string;
@@ -123,7 +126,7 @@ export const login = async (
   }
 
   res.json({
-    userData: { userId: user.id, name: user.name, email: user.email },
-    token,
+    userData: { id: user.id, name: user.name, email: user.email, blogPosts: user.blogPosts },
+    authData: { token, userId: user.id },
   });
 };
