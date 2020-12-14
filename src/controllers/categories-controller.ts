@@ -27,7 +27,6 @@ export const getCategories = async (
   }
   return res.status(200).json({
     categories: categories.map((category) => {
-      console.log(correctResponse(category.toObject({ getters: true })))
       return correctResponse(category.toObject({ getters: true }))
     })
   });

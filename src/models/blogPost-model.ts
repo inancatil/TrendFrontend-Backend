@@ -1,5 +1,4 @@
-import mongoose, { Schema, Document, Types } from "mongoose";
-import { IPlace } from "./place-model";
+import mongoose, { Schema, Document } from "mongoose";
 import uniqueValidator from "mongoose-unique-validator";
 export interface IBlogPost extends Document {
   title: string;

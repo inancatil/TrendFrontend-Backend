@@ -6,6 +6,7 @@ export interface IUser extends Document {
   email: string;
   password: string;
   blogPosts: mongoose.Types.ObjectId[];
+  role: string
 }
 const userSchema: Schema = new Schema({
   name: { type: String, required: true },
@@ -14,6 +15,7 @@ const userSchema: Schema = new Schema({
   blogPosts: [
     { type: mongoose.Types.ObjectId, required: true, ref: "BlogPost" },
   ],
+  role: { type: String, required: true }
 });
 
 userSchema.plugin(uniqueValidator);

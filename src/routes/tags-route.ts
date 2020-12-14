@@ -1,13 +1,11 @@
 import { Router } from "express";
 import { check } from "express-validator";
 import * as tagsController from "../controllers/tags-controller";
-import checkAuth from "../middleware/check-auth";
 
 const tagsRouter = Router();
 
 tagsRouter.get("/", tagsController.getTags);
 
-tagsRouter.use(checkAuth);
 
 /*
 check("prop") controllerda tanımlı olan objenin prop larında hangisinin validate

@@ -82,9 +82,8 @@ export const createBlogPost = async (
   try {
     const session = await mongoose.startSession();
     session.startTransaction();
-    console.log(createdBlogPost)
     const _createdBP = await createdBlogPost.save({ session });
-    console.log(_createdBP._id)
+
     user.blogPosts.push(_createdBP._id);
     await user.save({ session });
     if (category) {

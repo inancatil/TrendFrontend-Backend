@@ -1,29 +1,38 @@
 import express, { NextFunction, Request, Response } from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
-
-import { placesRouter, usersRouter } from "./routes";
-import HttpError, { ICustomErrorHandler } from "./models/http-error";
-import categoriesRouter from "./routes/categories-route";
-import tagsRouter from "./routes/tags-route";
-import blogPostRouter from "./routes/blogPost-route";
+import cookieParser from "cookie-parser"
+import { usersRouter, categoriesRouter, tagsRouter, blogPostRouter } from "./routes";
+import HttpError from "./models/http-error";
+import User from "./models/user-model";
+import bcrypt from "bcryptjs"
+import { errorHandler } from "./middleware/error-handler";
+import cors from "cors";
 
 const app = express();
 
+async function createTestUser() {
+  // create test user if the db is empty
+  if ((await User.countDocuments({})) === 1) {
+    const user = new User({
+      name: 'Test',
+      email: 'test',
+      blogPosts: [],
+      password: bcrypt.hashSync('test', 10),
+      role: "Admin"
+    });
+    await user.save();
+  }
+}
+
+//createTestUser();
+
 app.use(bodyParser.json());
-app.use((
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  
-  res.setHeader("Access-Control-Allow-Origin","*")
-  res.setHeader("Access-Control-Allow-Headers","Origin, X-Requested-With, Content-Type,Accept,Authorization")
-  res.setHeader("Access-Control-Allow-Methods","GET,POST,PATCH,DELETE")
-  next();
-})
+
+app.use(cookieParser());
+app.use(cors({ origin: (origin, callback) => callback(null, true), credentials: true }));
+
 app.use("/api/users", usersRouter);
-app.use("/api/places", placesRouter);
 app.use("/api/categories", categoriesRouter);
 app.use("/api/tags", tagsRouter);
 app.use("/api/blogPosts", blogPostRouter);
@@ -33,20 +42,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   throw error;
 });
 
-app.use(
-  (
-    error: ICustomErrorHandler,
-    req: Request,
-    res: Response,
-    next: NextFunction
-  ) => {
-    if (res.headersSent) {
-      return next(error);
-    }
-    res.status(error.code || 500);
-    res.json({ message: error.message || "An unknown error" });
-  }
-);
+app.use(errorHandler);
 
 mongoose
   .connect(

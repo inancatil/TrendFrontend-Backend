@@ -1,13 +1,11 @@
 import { Router } from "express";
-import { check } from "express-validator";
 import * as blogPostController from "../controllers/blogPost-controller";
-import checkAuth from "../middleware/check-auth";
+import { authorize } from "../middleware/authorize";
 
 const blogPostRouter = Router();
 
 blogPostRouter.get("/", blogPostController.getBlogPosts);
 
-blogPostRouter.use(checkAuth);
 
 /*
 check("prop") controllerda tanımlı olan objenin prop larında hangisinin validate
