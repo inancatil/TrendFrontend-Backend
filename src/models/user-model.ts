@@ -20,6 +20,16 @@ const userSchema: Schema = new Schema({
 
 userSchema.plugin(uniqueValidator);
 
+userSchema.set('toJSON', {
+  virtuals: true,
+  versionKey: false,
+  transform: function (_: any, ret: any) {
+    // remove these props when object is serialized
+    delete ret._id;
+    delete ret.password;
+  }
+});
+
 const User = mongoose.model<IUser>("User", userSchema);
 
 export default User;

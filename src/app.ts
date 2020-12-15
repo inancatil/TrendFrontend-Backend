@@ -50,7 +50,7 @@ mongoose
     { useNewUrlParser: true, useUnifiedTopology: true, useCreateIndex: true }
   )
   .then(() => {
-    app.listen(80, () => {
+    app.listen(4000, () => {
       console.log("Server started");
     });
   })

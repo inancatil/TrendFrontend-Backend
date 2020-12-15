@@ -29,7 +29,7 @@ export function authorize(roles: string[] = []) {
 
                 return res.status(401).json({ message: 'Unauthorized' });
             }
-
+            console.log(user)
             // authentication and authorization successful
             req.user.role = user.role;
             const refreshTokens = await RefreshToken.find({ user: user.id });

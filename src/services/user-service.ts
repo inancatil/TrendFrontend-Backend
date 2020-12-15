@@ -61,7 +61,7 @@ async function refreshToken(token: string, ipAddress: string) {
 
 async function revokeToken(token: string, ipAddress: string) {
     const refreshToken = await getRefreshToken(token);
-
+    console.log(refreshToken)
     // revoke token and save
     refreshToken.revoked = new Date();
     refreshToken.revokedByIp = ipAddress;
@@ -100,7 +100,7 @@ async function getRefreshToken(token: string) {
 
     const refreshToken = await RefreshToken.findOne({ token });
 
-    if (!refreshToken) throw 'Invalid token';
+    if (!refreshToken || !refreshToken.isActive) throw 'Invalid token';
     return refreshToken;
 }
 

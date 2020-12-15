@@ -5,7 +5,7 @@ import { authorize } from "../middleware/authorize";
 
 const categoriesRouter = Router();
 
-categoriesRouter.get("/", authorize(["Admin"]), categoriesController.getCategories);
+categoriesRouter.get("/", authorize(), categoriesController.getCategories);
 
 
 /*
