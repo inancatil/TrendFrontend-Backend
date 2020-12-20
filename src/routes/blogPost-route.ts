@@ -6,11 +6,10 @@ const blogPostRouter = Router();
 
 blogPostRouter.get("/", blogPostController.getBlogPosts);
 
-
 /*
 check("prop") controllerda tanımlı olan objenin prop larında hangisinin validate
 olmasını istiyorsak onu yazıyoruz */
-blogPostRouter.post("/", blogPostController.createBlogPost);
+blogPostRouter.post("/", authorize(), blogPostController.createBlogPost);
 
 // placesRouter.patch(
 //   "/:pid",
@@ -18,6 +17,10 @@ blogPostRouter.post("/", blogPostController.createBlogPost);
 //   placesController.updatePlace
 // );
 
-blogPostRouter.delete("/:bpid", blogPostController.deleteBlogPostById);
+blogPostRouter.delete(
+  "/:bpid",
+  authorize(),
+  blogPostController.deleteBlogPostById
+);
 
 export default blogPostRouter;

@@ -1,11 +1,16 @@
 import express, { NextFunction, Request, Response } from "express";
 import bodyParser from "body-parser";
 import mongoose from "mongoose";
-import cookieParser from "cookie-parser"
-import { usersRouter, categoriesRouter, tagsRouter, blogPostRouter } from "./routes";
+import cookieParser from "cookie-parser";
+import {
+  usersRouter,
+  categoriesRouter,
+  tagsRouter,
+  blogPostRouter,
+} from "./routes";
 import HttpError from "./models/http-error";
 import User from "./models/user-model";
-import bcrypt from "bcryptjs"
+import bcrypt from "bcryptjs";
 import { errorHandler } from "./middleware/error-handler";
 import cors from "cors";
 
@@ -15,11 +20,11 @@ async function createTestUser() {
   // create test user if the db is empty
   if ((await User.countDocuments({})) === 1) {
     const user = new User({
-      name: 'Test',
-      email: 'test',
+      name: "Test",
+      email: "test",
       blogPosts: [],
-      password: bcrypt.hashSync('test', 10),
-      role: "Admin"
+      password: bcrypt.hashSync("test", 10),
+      role: "Admin",
     });
     await user.save();
   }
@@ -30,7 +35,12 @@ async function createTestUser() {
 app.use(bodyParser.json());
 
 app.use(cookieParser());
-app.use(cors({ origin: (origin, callback) => callback(null, true), credentials: true }));
+app.use(
+  cors({
+    origin: (origin, callback) => callback(null, true),
+    credentials: true,
+  })
+);
 
 app.use("/api/users", usersRouter);
 app.use("/api/categories", categoriesRouter);

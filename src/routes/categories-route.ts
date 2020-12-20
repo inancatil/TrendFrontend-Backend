@@ -5,14 +5,14 @@ import { authorize } from "../middleware/authorize";
 
 const categoriesRouter = Router();
 
-categoriesRouter.get("/", authorize(), categoriesController.getCategories);
-
+categoriesRouter.get("/", categoriesController.getCategories);
 
 /*
 check("prop") controllerda tanımlı olan objenin prop larında hangisinin validate
 olmasını istiyorsak onu yazıyoruz */
 categoriesRouter.post(
   "/",
+  authorize(),
   [check("name").isLength({ min: 3 })],
   categoriesController.createCategory
 );
@@ -23,6 +23,10 @@ categoriesRouter.post(
 //   placesController.updatePlace
 // );
 
-categoriesRouter.delete("/:pcid", categoriesController.deleteCategory);
+categoriesRouter.delete(
+  "/:pcid",
+  authorize(),
+  categoriesController.deleteCategory
+);
 
 export default categoriesRouter;

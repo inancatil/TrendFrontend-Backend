@@ -1,17 +1,18 @@
 import { Router } from "express";
 import { check } from "express-validator";
 import * as tagsController from "../controllers/tags-controller";
+import { authorize } from "../middleware/authorize";
 
 const tagsRouter = Router();
 
 tagsRouter.get("/", tagsController.getTags);
-
 
 /*
 check("prop") controllerda tanımlı olan objenin prop larında hangisinin validate
 olmasını istiyorsak onu yazıyoruz */
 tagsRouter.post(
   "/",
+  authorize(),
   [check("name").isLength({ min: 3 })],
   tagsController.createTag
 );
@@ -22,6 +23,6 @@ tagsRouter.post(
 //   placesController.updatePlace
 // );
 
-tagsRouter.delete("/:pid", tagsController.deleteTag);
+tagsRouter.delete("/:pid", authorize(), tagsController.deleteTag);
 
 export default tagsRouter;
