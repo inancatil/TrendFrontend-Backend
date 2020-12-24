@@ -22,10 +22,12 @@ export const getBlogPosts = async (
   }
 
   if (!blogPosts) {
-    return next(new HttpError("Couldnt find place", 404));
+    return next(new HttpError("Couldnt find posts", 404));
   }
   return res.json({
-    blogPosts: blogPosts.map((post) => correctResponse(post.toObject({ getters: true }))),
+    blogPosts: blogPosts.map((post) =>
+      correctResponse(post.toObject({ getters: true }))
+    ),
   });
 };
 
@@ -55,14 +57,17 @@ export const createBlogPost = async (
   try {
     user = await User.findById(author);
   } catch (error) {
-    return next(new HttpError("Couldnt find user, Creating blogpost failed", 500));
+    return next(
+      new HttpError("Couldnt find user, Creating blogpost failed", 500)
+    );
   }
 
   if (!user) {
-    return next(new HttpError("Couldnt find user, Creating blogpost failed", 404));
+    return next(
+      new HttpError("Couldnt find user, Creating blogpost failed", 404)
+    );
   }
   //#endregion
-
 
   //#region find and select category
   let category: ICategory | null = null;
@@ -70,14 +75,15 @@ export const createBlogPost = async (
   try {
     category = await Category.findById(categoryId);
   } catch (error) {
-    return next(new HttpError("Something went wrong. Couldn't find category id.", 500));
+    return next(
+      new HttpError("Something went wrong. Couldn't find category id.", 500)
+    );
   }
 
   if (categoryId && !category) {
     return next(new HttpError("Couldn't find category id.", 404));
   }
   //#endregion
-
 
   try {
     const session = await mongoose.startSession();
@@ -95,7 +101,11 @@ export const createBlogPost = async (
     return next(new HttpError(err, 500));
   }
 
-  res.status(201).json({ blogPost: correctResponse(createdBlogPost.toObject({ getters: true })) });
+  res
+    .status(201)
+    .json({
+      blogPost: correctResponse(createdBlogPost.toObject({ getters: true })),
+    });
 };
 
 export const deleteBlogPostById = async (
@@ -114,7 +124,9 @@ export const deleteBlogPostById = async (
   try {
     blogPost = await BlogPost.findById(blogPostId);
   } catch (error) {
-    return next(new HttpError("Sometihng went wrong. Couldn't delete blog post.", 500));
+    return next(
+      new HttpError("Sometihng went wrong. Couldn't delete blog post.", 500)
+    );
   }
   if (!blogPost) {
     return next(new HttpError("Couldn't find blog post for provided id.", 404));
@@ -126,7 +138,12 @@ export const deleteBlogPostById = async (
   try {
     user = await User.findById(blogPost.author);
   } catch (error) {
-    return next(new HttpError("Sometihng went wrong. Couldn't delete blog post from user.", 500));
+    return next(
+      new HttpError(
+        "Sometihng went wrong. Couldn't delete blog post from user.",
+        500
+      )
+    );
   }
 
   if (!user) {
@@ -134,13 +151,17 @@ export const deleteBlogPostById = async (
   }
   //#endregion
 
-
   //#region find and select category
   let category: ICategory | null;
   try {
     category = await Category.findById(blogPost.categoryId);
   } catch (error) {
-    return next(new HttpError("Sometihng went wrong. Couldn't delete blog post from category.", 500));
+    return next(
+      new HttpError(
+        "Sometihng went wrong. Couldn't delete blog post from category.",
+        500
+      )
+    );
   }
 
   if (!category) {
@@ -156,12 +177,16 @@ export const deleteBlogPostById = async (
     //#region without populate way
 
     user?.blogPosts.splice(
-      user?.blogPosts.findIndex((blogPost) => blogPost.toHexString() === blogPostId),
+      user?.blogPosts.findIndex(
+        (blogPost) => blogPost.toHexString() === blogPostId
+      ),
       1
     );
     await user?.save({ session });
     category?.blogPosts.splice(
-      category?.blogPosts.findIndex((blogPost) => blogPost.toHexString() === blogPostId),
+      category?.blogPosts.findIndex(
+        (blogPost) => blogPost.toHexString() === blogPostId
+      ),
       1
     );
     await category?.save({ session });
@@ -170,10 +195,14 @@ export const deleteBlogPostById = async (
     await session.commitTransaction();
   } catch (error) {
     return next(
-      new HttpError("Something went wrong, couldnt delete place", 500)
+      new HttpError("Something went wrong, couldnt delete post", 500)
     );
   }
 
-  res.status(201).json({ message: "Delete successful", blogPost: correctResponse(blogPost.toObject({ getters: true })) });
+  res
+    .status(201)
+    .json({
+      message: "Delete successful",
+      blogPost: correctResponse(blogPost.toObject({ getters: true })),
+    });
 };
-

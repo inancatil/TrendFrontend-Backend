@@ -19,16 +19,18 @@ export const getCategories = async (
     //users = await User.find({}, "email name"); //sadece email pass döner
     categories = await Category.find({}, "-__v"); //pass dışındakiler döner
   } catch (_) {
-    return next(new HttpError("Something went wrong, Couldnt find place", 500));
+    return next(
+      new HttpError("Something went wrong, Couldnt find categories", 500)
+    );
   }
 
   if (!categories) {
-    return next(new HttpError("Couldnt find place", 404));
+    return next(new HttpError("Couldnt find categories", 404));
   }
   return res.status(200).json({
     categories: categories.map((category) => {
-      return correctResponse(category.toObject({ getters: true }))
-    })
+      return correctResponse(category.toObject({ getters: true }));
+    }),
   });
 };
 
@@ -51,10 +53,14 @@ export const createCategory = async (
   try {
     await createdCategory.save();
   } catch (err) {
-    return next(new HttpError("Creating place failed", 500));
+    return next(new HttpError("Creating category failed", 500));
   }
 
-  res.status(201).json({ category: correctResponse(createdCategory.toObject({ getters: true })) });
+  res
+    .status(201)
+    .json({
+      category: correctResponse(createdCategory.toObject({ getters: true })),
+    });
 };
 
 export const deleteCategory = async (
@@ -67,10 +73,12 @@ export const deleteCategory = async (
   try {
     category = await Category.findById(categoryId);
   } catch (error) {
-    return next(new HttpError("Something went wrong, couldnt find place", 500));
+    return next(
+      new HttpError("Something went wrong, couldnt find category", 500)
+    );
   }
   if (!category) {
-    return next(new HttpError("Place couldnt found", 404));
+    return next(new HttpError("Category couldnt found", 404));
   }
 
   let blogPosts: IBlogPost[] | null;
@@ -82,9 +90,8 @@ export const deleteCategory = async (
     );
   }
   if (!blogPosts) {
-    return next(new HttpError("Place couldnt found", 404));
+    return next(new HttpError("Category couldnt found", 404));
   }
-
 
   //User ve blogpost tablosundan category e sahip olanlar da silince
   try {
@@ -93,16 +100,25 @@ export const deleteCategory = async (
 
     category?.deleteOne({ session });
 
-    await BlogPost.updateMany({ categoryId }, { categoryId: null }, { session })
+    await BlogPost.updateMany(
+      { categoryId },
+      { categoryId: null },
+      { session }
+    );
 
     //#endregion
     await session.commitTransaction();
   } catch (error) {
     return next(
-      new HttpError("Something went wrong, couldnt delete place", 500)
+      new HttpError("Something went wrong, couldnt delete category", 500)
     );
   }
-  res.status(200).json({ message: "category deleted", category: correctResponse(category.toObject({ getters: true })) });
+  res
+    .status(200)
+    .json({
+      message: "category deleted",
+      category: correctResponse(category.toObject({ getters: true })),
+    });
 };
 
 //UPDATE YAZILACAK

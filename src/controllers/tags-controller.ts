@@ -14,11 +14,11 @@ export const getTags = async (
   try {
     tags = await Tag.find({});
   } catch (_) {
-    return next(new HttpError("Something went wrong, Couldnt find place", 500));
+    return next(new HttpError("Something went wrong, Couldnt find tag", 500));
   }
 
   if (!tags) {
-    return next(new HttpError("Couldnt find place", 404));
+    return next(new HttpError("Couldnt find tag", 404));
   }
   return res.json({
     users: tags.map((tag) => tag.toObject({ getters: true })),
@@ -43,7 +43,7 @@ export const createTag = async (
   try {
     await createdTag.save();
   } catch (err) {
-    return next(new HttpError("Creating place failed", 500));
+    return next(new HttpError("Creating tag failed", 500));
   }
 
   res.status(201).json({ createdTag });
@@ -59,12 +59,10 @@ export const deleteTag = async (
   try {
     tag = await Tag.findById(categoryId);
   } catch (error) {
-    return next(
-      new HttpError("Something went wrong, couldnt delete place", 500)
-    );
+    return next(new HttpError("Something went wrong, couldnt delete tag", 500));
   }
   if (!tag) {
-    return next(new HttpError("Place couldnt found", 404));
+    return next(new HttpError("Tag couldnt found", 404));
   }
 
   //User ve blogpost tablosundan category e sahip olanlar da silince
@@ -87,7 +85,7 @@ export const deleteTag = async (
   //       new HttpError("Something went wrong, couldnt delete place", 500)
   //     );
   //   }
-  res.status(200).json({ message: "place deleted" });
+  res.status(200).json({ message: "Tag deleted" });
 };
 
 //UPDATE EKLENCEK
