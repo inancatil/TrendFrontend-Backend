@@ -8,6 +8,7 @@ import { IBlogPost } from "./../models/blogPost-model";
 import User, { IUser } from "../models/user-model";
 import Category, { ICategory } from "../models/category-model";
 import { correctResponse } from "../utils";
+import Tag, { ITag } from "../models/tag-model";
 
 export const getBlogPosts = async (
   req: Request,
@@ -42,15 +43,15 @@ export const createBlogPost = async (
   }
   const { title, content, imageUrl, author, date, tags, categoryId } = req.body;
 
-  const createdBlogPost = new BlogPost({
-    title,
-    content,
-    imageUrl,
-    author,
-    date,
-    tags,
-    categoryId,
-  });
+  // const createdBlogPost = new BlogPost({
+  //   title,
+  //   content,
+  //   imageUrl,
+  //   author,
+  //   date,
+  //   tags,
+  //   categoryId,
+  // });
 
   //#region find and select user
   let user: IUser | null;
@@ -85,9 +86,30 @@ export const createBlogPost = async (
   }
   //#endregion
 
+  let createdBlogPost: any;
   try {
     const session = await mongoose.startSession();
     session.startTransaction();
+    //let newTags = await Tag.find({ $nin: tags });
+    const newTags = tags
+      .filter((t: any) => t.__isNew__)
+      .map(function (tag: any) {
+        return {
+          name: tag.value,
+        };
+      });
+    const postTags: any = await Tag.insertMany(newTags, { session });
+
+    createdBlogPost = new BlogPost({
+      title,
+      content,
+      imageUrl,
+      author,
+      date,
+      tags: postTags,
+      categoryId,
+    });
+
     const _createdBP = await createdBlogPost.save({ session });
 
     user.blogPosts.push(_createdBP._id);
@@ -101,11 +123,9 @@ export const createBlogPost = async (
     return next(new HttpError(err, 500));
   }
 
-  res
-    .status(201)
-    .json({
-      blogPost: correctResponse(createdBlogPost.toObject({ getters: true })),
-    });
+  res.status(201).json({
+    blogPost: correctResponse(createdBlogPost.toObject({ getters: true })),
+  });
 };
 
 export const deleteBlogPostById = async (
@@ -199,10 +219,8 @@ export const deleteBlogPostById = async (
     );
   }
 
-  res
-    .status(201)
-    .json({
-      message: "Delete successful",
-      blogPost: correctResponse(blogPost.toObject({ getters: true })),
-    });
+  res.status(201).json({
+    message: "Delete successful",
+    blogPost: correctResponse(blogPost.toObject({ getters: true })),
+  });
 };

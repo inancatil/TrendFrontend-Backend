@@ -21,11 +21,11 @@ export const getTags = async (
     return next(new HttpError("Couldnt find tag", 404));
   }
   return res.json({
-    users: tags.map((tag) => tag.toObject({ getters: true })),
+    tags: tags.map((tag) => tag.toObject({ getters: true })),
   });
 };
 
-export const createTag = async (
+export const createTags = async (
   req: Request,
   res: Response,
   next: NextFunction
@@ -35,18 +35,23 @@ export const createTag = async (
     return next(new HttpError("Invalid data sent", 422));
   }
 
-  const { name } = req.body;
-  const createdTag = new Tag({
-    name,
-  });
-
+  const { tags } = req.body;
+  let newTags = await Tag.find({ $nin: tags });
+  console.log(tags);
+  console.log(newTags);
   try {
-    await createdTag.save();
+    //await createdTag.save();
+    const promises = newTags.map(function (tag: ITag) {
+      //here i am assigning foreign key
+      let alldata = new Tag(tag);
+      return alldata.save();
+    });
+    await Promise.all(promises);
   } catch (err) {
     return next(new HttpError("Creating tag failed", 500));
   }
 
-  res.status(201).json({ createdTag });
+  res.status(201).json({ tags });
 };
 
 export const deleteTag = async (

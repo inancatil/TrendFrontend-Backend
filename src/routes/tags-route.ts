@@ -10,12 +10,7 @@ tagsRouter.get("/", tagsController.getTags);
 /*
 check("prop") controllerda tanımlı olan objenin prop larında hangisinin validate
 olmasını istiyorsak onu yazıyoruz */
-tagsRouter.post(
-  "/",
-  authorize(),
-  [check("name").isLength({ min: 3 })],
-  tagsController.createTag
-);
+tagsRouter.post("/", authorize(), tagsController.createTags);
 
 // placesRouter.patch(
 //   "/:pid",
