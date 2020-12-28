@@ -90,23 +90,23 @@ export const createBlogPost = async (
   try {
     const session = await mongoose.startSession();
     session.startTransaction();
-    //let newTags = await Tag.find({ $nin: tags });
-    const newTags = tags
-      .filter((t: any) => t.__isNew__)
-      .map(function (tag: any) {
-        return {
-          name: tag.value,
-        };
-      });
-    const postTags: any = await Tag.insertMany(newTags, { session });
-
+    const tagNames = tags.map((t: any) => t.value);
+    const existingTags = await Tag.find({ name: { $in: tagNames } });
+    const newTags = await Tag.insertMany(
+      tags
+        .filter((t: any) => t.__isNew__)
+        .map((t: any) => {
+          return { name: t.value };
+        }),
+      { session }
+    );
     createdBlogPost = new BlogPost({
       title,
       content,
       imageUrl,
       author,
       date,
-      tags: postTags,
+      tags: existingTags.concat(newTags),
       categoryId,
     });
 

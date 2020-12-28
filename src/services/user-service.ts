@@ -108,7 +108,7 @@ async function getRefreshToken(token: string) {
 function generateJwtToken(user: IUser) {
   // create a jwt token containing the user id that expires in 15 minutes
   return jwt.sign({ sub: user.id, id: user.id }, `${process.env.JWT_KEY}`, {
-    expiresIn: "15m",
+    expiresIn: 5,
   });
 }
 
