@@ -8,7 +8,9 @@ import { IBlogPost } from "./../models/blogPost-model";
 import User, { IUser } from "../models/user-model";
 import Category, { ICategory } from "../models/category-model";
 import { correctResponse } from "../utils";
-import Tag, { ITag } from "../models/tag-model";
+import Tag from "../models/tag-model";
+import Joi from "joi";
+import { validateRequest } from "../middleware/validate-request";
 
 export const getBlogPosts = async (
   req: Request,
@@ -32,27 +34,27 @@ export const getBlogPosts = async (
   });
 };
 
+export function blogPostSchema(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const schema = Joi.object({
+    title: Joi.string().required(),
+    categoryId: Joi.string().required(),
+    tags: Joi.array(),
+    content: Joi.string().required().min(5),
+  });
+  validateRequest(req, next, schema);
+}
+
 export const createBlogPost = async (
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
-  const validationError = validationResult(req);
-  if (!validationError.isEmpty()) {
-    return next(new HttpError("Invalid data sent", 422));
-  }
   const { title, content, imageUrl, author, date, tags, categoryId } = req.body;
-
-  // const createdBlogPost = new BlogPost({
-  //   title,
-  //   content,
-  //   imageUrl,
-  //   author,
-  //   date,
-  //   tags,
-  //   categoryId,
-  // });
-
+  console.log(req.body);
   //#region find and select user
   let user: IUser | null;
   try {
@@ -94,9 +96,9 @@ export const createBlogPost = async (
     const existingTags = await Tag.find({ name: { $in: tagNames } });
     const newTags = await Tag.insertMany(
       tags
-        .filter((t: any) => t.__isNew__)
+        .filter((t: any) => t.isNew)
         .map((t: any) => {
-          return { name: t.value };
+          return { name: t.inputValue };
         }),
       { session }
     );
