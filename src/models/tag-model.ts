@@ -9,6 +9,15 @@ const tagSchema: Schema = new Schema({
 
 tagSchema.plugin(uniqueValidator);
 
+tagSchema.set("toJSON", {
+  virtuals: true,
+  versionKey: false,
+  transform: function (_: any, ret: any) {
+    // remove these props when object is serialized
+    delete ret._id;
+  },
+});
+
 const Tag = mongoose.model<ITag>("Tag", tagSchema);
 
 export default Tag;

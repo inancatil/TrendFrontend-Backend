@@ -4,10 +4,7 @@ import { NextFunction, Request, Response } from "express";
 import HttpError from "../models/http-error";
 import { validationResult } from "express-validator";
 import Category, { ICategory } from "../models/category-model";
-import User, { IUser } from "../models/user-model";
 import BlogPost, { IBlogPost } from "../models/blogPost-model";
-import { decodeBase64 } from "bcryptjs";
-import { correctResponse } from "../utils";
 
 export const getCategories = async (
   req: Request,
@@ -29,7 +26,7 @@ export const getCategories = async (
   }
   return res.status(200).json({
     categories: categories.map((category) => {
-      return correctResponse(category.toObject({ getters: true }));
+      return category.toJSON();
     }),
   });
 };
@@ -56,11 +53,9 @@ export const createCategory = async (
     return next(new HttpError("Creating category failed", 500));
   }
 
-  res
-    .status(201)
-    .json({
-      category: correctResponse(createdCategory.toObject({ getters: true })),
-    });
+  res.status(201).json({
+    category: createdCategory.toJSON(),
+  });
 };
 
 export const deleteCategory = async (
@@ -113,12 +108,10 @@ export const deleteCategory = async (
       new HttpError("Something went wrong, couldnt delete category", 500)
     );
   }
-  res
-    .status(200)
-    .json({
-      message: "category deleted",
-      category: correctResponse(category.toObject({ getters: true })),
-    });
+  res.status(200).json({
+    message: "category deleted",
+    category: category.toJSON(),
+  });
 };
 
 //UPDATE YAZILACAK

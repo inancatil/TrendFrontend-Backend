@@ -21,7 +21,7 @@ export const getTags = async (
     return next(new HttpError("Couldnt find tag", 404));
   }
   return res.json({
-    tags: tags.map((tag) => tag.toObject({ getters: true })),
+    tags: tags.map((tag) => tag.toJSON()),
   });
 };
 

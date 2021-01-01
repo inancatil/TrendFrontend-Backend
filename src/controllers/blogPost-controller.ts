@@ -7,7 +7,6 @@ import BlogPost from "../models/blogPost-model";
 import { IBlogPost } from "./../models/blogPost-model";
 import User, { IUser } from "../models/user-model";
 import Category, { ICategory } from "../models/category-model";
-import { correctResponse } from "../utils";
 import Tag from "../models/tag-model";
 import Joi from "joi";
 import { validateRequest } from "../middleware/validate-request";
@@ -19,18 +18,21 @@ export const getBlogPosts = async (
 ) => {
   let blogPosts;
   try {
-    blogPosts = await BlogPost.find({}); //pass dışındakiler döner
-  } catch (_) {
-    return next(new HttpError("Something went wrong, Couldnt find posts", 500));
+    blogPosts = await BlogPost.find({})
+      .populate({ path: "author", select: ["id", "name"] })
+      .populate({ path: "categoryId", select: ["id", "name"] })
+      .populate({ path: "tags", select: ["id", "name"] });
+  } catch (e) {
+    return next(
+      new HttpError("Something went wrong,1 Couldnt find posts", 500)
+    );
   }
 
   if (!blogPosts) {
     return next(new HttpError("Couldnt find posts", 404));
   }
   return res.json({
-    blogPosts: blogPosts.map((post) =>
-      correctResponse(post.toObject({ getters: true }))
-    ),
+    blogPosts: blogPosts.map((post) => post.toJSON()),
   });
 };
 
@@ -126,7 +128,7 @@ export const createBlogPost = async (
   }
 
   res.status(201).json({
-    blogPost: correctResponse(createdBlogPost.toObject({ getters: true })),
+    blogPost: createdBlogPost.toJSON(),
   });
 };
 
@@ -223,6 +225,6 @@ export const deleteBlogPostById = async (
 
   res.status(201).json({
     message: "Delete successful",
-    blogPost: correctResponse(blogPost.toObject({ getters: true })),
+    blogPost: blogPost.toJSON(),
   });
 };

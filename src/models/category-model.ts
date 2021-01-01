@@ -13,6 +13,15 @@ const categorySchema: Schema = new Schema({
 
 categorySchema.plugin(uniqueValidator);
 
+categorySchema.set("toJSON", {
+  virtuals: true,
+  versionKey: false,
+  transform: function (_: any, ret: any) {
+    // remove these props when object is serialized
+    delete ret._id;
+  },
+});
+
 const Category = mongoose.model<ICategory>("Category", categorySchema);
 
 export default Category;
