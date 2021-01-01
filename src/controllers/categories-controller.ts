@@ -1,10 +1,11 @@
 import mongoose from "mongoose";
 
 import { NextFunction, Request, Response } from "express";
-import HttpError from "../models/http-error";
 import { validationResult } from "express-validator";
 import Category, { ICategory } from "../models/category-model";
 import BlogPost, { IBlogPost } from "../models/blogPost-model";
+import Joi from "joi";
+import { validateRequest } from "../middleware/validate-request";
 
 export const getCategories = async (
   req: Request,
@@ -16,13 +17,11 @@ export const getCategories = async (
     //users = await User.find({}, "email name"); //sadece email pass döner
     categories = await Category.find({}, "-__v"); //pass dışındakiler döner
   } catch (_) {
-    return next(
-      new HttpError("Something went wrong, Couldnt find categories", 500)
-    );
+    return next("Something went wrong, Couldnt find categories");
   }
 
   if (!categories) {
-    return next(new HttpError("Couldnt find categories", 404));
+    return next("Couldnt find categories");
   }
   return res.status(200).json({
     categories: categories.map((category) => {
@@ -31,6 +30,17 @@ export const getCategories = async (
   });
 };
 
+export function categorySchema(
+  req: Request,
+  res: Response,
+  next: NextFunction
+) {
+  const schema = Joi.object({
+    name: Joi.string().required().min(3),
+  });
+  validateRequest(req, next, schema);
+}
+
 export const createCategory = async (
   req: Request,
   res: Response,
@@ -38,7 +48,7 @@ export const createCategory = async (
 ) => {
   const validationError = validationResult(req);
   if (!validationError.isEmpty()) {
-    return next(new HttpError("Invalid data sent", 422));
+    return next(validationError.array());
   }
 
   const { name } = req.body;
@@ -50,7 +60,7 @@ export const createCategory = async (
   try {
     await createdCategory.save();
   } catch (err) {
-    return next(new HttpError("Creating category failed", 500));
+    return next("Creating category failed");
   }
 
   res.status(201).json({
@@ -68,24 +78,20 @@ export const deleteCategory = async (
   try {
     category = await Category.findById(categoryId);
   } catch (error) {
-    return next(
-      new HttpError("Something went wrong, couldnt find category", 500)
-    );
+    return next("Something went wrong, couldnt find category");
   }
   if (!category) {
-    return next(new HttpError("Category couldnt found", 404));
+    return next("Category couldnt found");
   }
 
   let blogPosts: IBlogPost[] | null;
   try {
     blogPosts = await BlogPost.find({ categoryId });
   } catch (error) {
-    return next(
-      new HttpError("Error at deleting from blogPosts collection", 500)
-    );
+    return next("Error at deleting from blogPosts collection");
   }
   if (!blogPosts) {
-    return next(new HttpError("Category couldnt found", 404));
+    return next("Category couldnt found");
   }
 
   //User ve blogpost tablosundan category e sahip olanlar da silince
@@ -104,9 +110,7 @@ export const deleteCategory = async (
     //#endregion
     await session.commitTransaction();
   } catch (error) {
-    return next(
-      new HttpError("Something went wrong, couldnt delete category", 500)
-    );
+    return next("Something went wrong, couldnt delete category");
   }
   res.status(200).json({
     message: "category deleted",

@@ -1,5 +1,4 @@
 import { NextFunction, Request, Response } from "express";
-import HttpError from "../models/http-error";
 
 import Joi from "joi";
 import { validateRequest } from "../middleware/validate-request";
@@ -27,7 +26,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
       res.json(user);
     })
     .catch((e) => {
-      return next(new HttpError(e, 500));
+      return next(e);
     });
 }
 

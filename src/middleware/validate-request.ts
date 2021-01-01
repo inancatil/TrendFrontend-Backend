@@ -7,7 +7,11 @@ export function validateRequest(req: any, next: any, schema: any) {
   const { error, value } = schema.validate(req.body, options);
   if (error) {
     next(
-      `Validation error: ${error.details.map((x: any) => x.message).join(", ")}`
+      {
+        name: "JoeValidationError",
+        messages: error.details.map((x: any) => x.message),
+      }
+      //`Validation error: ${error.details.map((x: any) => x.message).join(", ")}`
     );
   } else {
     req.body = value;

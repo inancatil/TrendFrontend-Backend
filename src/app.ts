@@ -8,7 +8,6 @@ import {
   tagsRouter,
   blogPostRouter,
 } from "./routes";
-import HttpError from "./models/http-error";
 import User from "./models/user-model";
 import bcrypt from "bcryptjs";
 import { errorHandler } from "./middleware/error-handler";
@@ -47,9 +46,9 @@ app.use("/api/categories", categoriesRouter);
 app.use("/api/tags", tagsRouter);
 app.use("/api/blogPosts", blogPostRouter);
 
+//Catch 404
 app.use((req: Request, res: Response, next: NextFunction) => {
-  const error = new HttpError("Couldnt find this route", 404);
-  throw error;
+  next(`Couldnt find ${req.originalUrl}`);
 });
 
 app.use(errorHandler);

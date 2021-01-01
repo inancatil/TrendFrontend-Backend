@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 import { NextFunction, Request, Response } from "express";
-import HttpError from "../models/http-error";
 import { validationResult } from "express-validator";
 import Tag, { ITag } from "../models/tag-model";
 
@@ -14,11 +13,11 @@ export const getTags = async (
   try {
     tags = await Tag.find({});
   } catch (_) {
-    return next(new HttpError("Something went wrong, Couldnt find tag", 500));
+    return next("Something went wrong, Couldnt find tag");
   }
 
   if (!tags) {
-    return next(new HttpError("Couldnt find tag", 404));
+    return next("Couldnt find tag");
   }
   return res.json({
     tags: tags.map((tag) => tag.toJSON()),
@@ -32,7 +31,7 @@ export const createTags = async (
 ) => {
   const validationError = validationResult(req);
   if (!validationError.isEmpty()) {
-    return next(new HttpError("Invalid data sent", 422));
+    return next("Invalid data sent");
   }
 
   const { tags } = req.body;
@@ -48,7 +47,7 @@ export const createTags = async (
     });
     await Promise.all(promises);
   } catch (err) {
-    return next(new HttpError("Creating tag failed", 500));
+    return next("Creating tag failed");
   }
 
   res.status(201).json({ tags });
@@ -59,15 +58,15 @@ export const deleteTag = async (
   res: Response,
   next: NextFunction
 ) => {
-  const { categoryId } = req.body;
+  const { category } = req.body;
   let tag: ITag | null;
   try {
-    tag = await Tag.findById(categoryId);
+    tag = await Tag.findById(category);
   } catch (error) {
-    return next(new HttpError("Something went wrong, couldnt delete tag", 500));
+    return next("Something went wrong, couldnt delete tag");
   }
   if (!tag) {
-    return next(new HttpError("Tag couldnt found", 404));
+    return next("Tag couldnt found");
   }
 
   //User ve blogpost tablosundan category e sahip olanlar da silince
@@ -87,7 +86,7 @@ export const deleteTag = async (
   //     await session.commitTransaction();
   //   } catch (error) {
   //     return next(
-  //       new HttpError("Something went wrong, couldnt delete place", 500)
+  //       "Something went wrong, couldnt delete place", 500)
   //     );
   //   }
   res.status(200).json({ message: "Tag deleted" });

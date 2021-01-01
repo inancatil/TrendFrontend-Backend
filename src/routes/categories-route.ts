@@ -13,7 +13,7 @@ olmasını istiyorsak onu yazıyoruz */
 categoriesRouter.post(
   "/",
   authorize(),
-  [check("name").isLength({ min: 3 })],
+  categoriesController.categorySchema,
   categoriesController.createCategory
 );
 

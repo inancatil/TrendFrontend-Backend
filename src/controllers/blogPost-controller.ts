@@ -1,7 +1,6 @@
 import mongoose from "mongoose";
 
 import { NextFunction, Request, Response } from "express";
-import HttpError from "../models/http-error";
 import { validationResult } from "express-validator";
 import BlogPost from "../models/blogPost-model";
 import { IBlogPost } from "./../models/blogPost-model";
@@ -20,16 +19,14 @@ export const getBlogPosts = async (
   try {
     blogPosts = await BlogPost.find({})
       .populate({ path: "author", select: ["id", "name"] })
-      .populate({ path: "categoryId", select: ["id", "name"] })
+      .populate({ path: "category", select: ["id", "name"] })
       .populate({ path: "tags", select: ["id", "name"] });
   } catch (e) {
-    return next(
-      new HttpError("Something went wrong,1 Couldnt find posts", 500)
-    );
+    return next("Something went wrong,1 Couldnt find posts");
   }
 
   if (!blogPosts) {
-    return next(new HttpError("Couldnt find posts", 404));
+    return next("Couldnt find posts");
   }
   return res.json({
     blogPosts: blogPosts.map((post) => post.toJSON()),
@@ -45,7 +42,7 @@ export function blogPostSchema(
     title: Joi.string().required(),
     categoryId: Joi.string().required(),
     tags: Joi.array(),
-    content: Joi.string().required().min(5),
+    content: Joi.string().min(15),
   });
   validateRequest(req, next, schema);
 }
@@ -62,15 +59,11 @@ export const createBlogPost = async (
   try {
     user = await User.findById(author);
   } catch (error) {
-    return next(
-      new HttpError("Couldnt find user, Creating blogpost failed", 500)
-    );
+    return next("Couldnt find user, Creating blogpost failed");
   }
 
   if (!user) {
-    return next(
-      new HttpError("Couldnt find user, Creating blogpost failed", 404)
-    );
+    return next("Couldnt find user, Creating blogpost failed");
   }
   //#endregion
 
@@ -80,13 +73,11 @@ export const createBlogPost = async (
   try {
     category = await Category.findById(categoryId);
   } catch (error) {
-    return next(
-      new HttpError("Something went wrong. Couldn't find category id.", 500)
-    );
+    return next("Something went wrong. Couldn't find category id.");
   }
 
   if (categoryId && !category) {
-    return next(new HttpError("Couldn't find category id.", 404));
+    return next("Couldn't find category id.");
   }
   //#endregion
 
@@ -111,7 +102,7 @@ export const createBlogPost = async (
       author,
       date,
       tags: existingTags.concat(newTags),
-      categoryId,
+      category,
     });
 
     const _createdBP = await createdBlogPost.save({ session });
@@ -124,7 +115,7 @@ export const createBlogPost = async (
     }
     await session.commitTransaction();
   } catch (err) {
-    return next(new HttpError(err, 500));
+    return next(err);
   }
 
   res.status(201).json({
@@ -139,7 +130,7 @@ export const deleteBlogPostById = async (
 ) => {
   const validationError = validationResult(req);
   if (!validationError.isEmpty()) {
-    return next(new HttpError("Invalid data sent", 422));
+    return next("Invalid data sent");
   }
   const blogPostId: string = req.params.bpid;
 
@@ -148,12 +139,10 @@ export const deleteBlogPostById = async (
   try {
     blogPost = await BlogPost.findById(blogPostId);
   } catch (error) {
-    return next(
-      new HttpError("Sometihng went wrong. Couldn't delete blog post.", 500)
-    );
+    return next("Sometihng went wrong. Couldn't delete blog post.");
   }
   if (!blogPost) {
-    return next(new HttpError("Couldn't find blog post for provided id.", 404));
+    return next("Couldn't find blog post for provided id.");
   }
   //#endregion
 
@@ -162,34 +151,26 @@ export const deleteBlogPostById = async (
   try {
     user = await User.findById(blogPost.author);
   } catch (error) {
-    return next(
-      new HttpError(
-        "Sometihng went wrong. Couldn't delete blog post from user.",
-        500
-      )
-    );
+    return next("Sometihng went wrong. Couldn't delete blog post from user.");
   }
 
   if (!user) {
-    return next(new HttpError("Couldn't delete blog post from user.", 404));
+    return next("Couldn't delete blog post from user.");
   }
   //#endregion
 
   //#region find and select category
   let category: ICategory | null;
   try {
-    category = await Category.findById(blogPost.categoryId);
+    category = await Category.findById(blogPost.category);
   } catch (error) {
     return next(
-      new HttpError(
-        "Sometihng went wrong. Couldn't delete blog post from category.",
-        500
-      )
+      "Sometihng went wrong. Couldn't delete blog post from category."
     );
   }
 
   if (!category) {
-    return next(new HttpError("Couldn't delete blog post from category.", 404));
+    return next("Couldn't delete blog post from category.");
   }
   //#endregion
 
@@ -218,9 +199,7 @@ export const deleteBlogPostById = async (
     //#endregion
     await session.commitTransaction();
   } catch (error) {
-    return next(
-      new HttpError("Something went wrong, couldnt delete post", 500)
-    );
+    return next("Something went wrong, couldnt delete post");
   }
 
   res.status(201).json({

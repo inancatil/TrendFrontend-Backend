@@ -10,7 +10,7 @@ export interface IBlogPost extends Document {
   author: mongoose.Types.ObjectId | IUser;
   date: string;
   tags: mongoose.Types.ObjectId[] | ITag[];
-  categoryId: mongoose.Types.ObjectId | null | ICategory;
+  category: mongoose.Types.ObjectId | null | ICategory;
 }
 const blogPostSchema: Schema = new Schema({
   title: { type: String, required: true },
@@ -19,7 +19,7 @@ const blogPostSchema: Schema = new Schema({
   author: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
   date: { type: String, required: true },
   tags: [{ type: mongoose.Types.ObjectId, ref: "Tag" }],
-  categoryId: {
+  category: {
     type: mongoose.Types.ObjectId,
     ref: "Category",
   },
