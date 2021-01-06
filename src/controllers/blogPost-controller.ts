@@ -201,6 +201,11 @@ export const deleteBlogPostById = async (
   } catch (error) {
     return next("Something went wrong, couldnt delete post");
   }
+
+  res.status(201).json({
+    message: "Delete successful",
+    blogPost: blogPost.toJSON(),
+  });
 };
 
 export const updateBlogPost = async (
@@ -231,7 +236,6 @@ export const updateBlogPost = async (
 
   let updatedPost: any;
   try {
-    //await BlogPost.updateOne({ id: blogPostId }, updatedPost);
     const session = await mongoose.startSession();
     session.startTransaction();
     const tagNames = tags.map((t: any) => t.value);
@@ -244,6 +248,7 @@ export const updateBlogPost = async (
         }),
       { session }
     );
+    //author aslında yanlış formatta geldiği için güncellemiyor ama orayı update etmediğimiz için çalışıyor.
     updatedPost = new BlogPost({
       title,
       content,
