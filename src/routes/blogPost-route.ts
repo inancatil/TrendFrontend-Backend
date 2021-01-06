@@ -17,11 +17,12 @@ blogPostRouter.post(
   blogPostController.createBlogPost
 );
 
-// placesRouter.patch(
-//   "/:pid",
-//   [check("title").not().isEmpty(), check("description").isLength({ min: 5 })],
-//   placesController.updatePlace
-// );
+blogPostRouter.patch(
+  "/:bpid",
+  authorize(),
+  blogPostController.blogPostSchema,
+  blogPostController.updateBlogPost
+);
 
 blogPostRouter.delete(
   "/:bpid",

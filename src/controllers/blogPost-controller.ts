@@ -201,9 +201,72 @@ export const deleteBlogPostById = async (
   } catch (error) {
     return next("Something went wrong, couldnt delete post");
   }
+};
+
+export const updateBlogPost = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const validationError = validationResult(req);
+  if (!validationError.isEmpty()) {
+    return next("Invalid data sent");
+  }
+  const blogPostId: string = req.params.bpid;
+  const { title, content, imageUrl, author, date, tags, categoryId } = req.body;
+
+  //#region find and select category
+  let category: ICategory | null = null;
+
+  try {
+    category = await Category.findById(categoryId);
+  } catch (error) {
+    return next("Something went wrong. Couldn't find category id.");
+  }
+
+  if (categoryId && !category) {
+    return next("Couldn't find category id.");
+  }
+  //#endregion
+
+  let updatedPost: any;
+  try {
+    //await BlogPost.updateOne({ id: blogPostId }, updatedPost);
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    const tagNames = tags.map((t: any) => t.value);
+    const existingTags = await Tag.find({ name: { $in: tagNames } });
+    const newTags = await Tag.insertMany(
+      tags
+        .filter((t: any) => t.isNew)
+        .map((t: any) => {
+          return { name: t.inputValue };
+        }),
+      { session }
+    );
+    updatedPost = new BlogPost({
+      title,
+      content,
+      imageUrl,
+      author,
+      date,
+      tags: existingTags.concat(newTags),
+      category,
+    });
+
+    const doc = await BlogPost.findOne({ _id: blogPostId });
+
+    // Sets `name` and unsets all other properties
+    doc!.overwrite(updatedPost);
+    await doc!.save({ session });
+
+    await session.commitTransaction();
+  } catch (error) {
+    return next("Something went wrong, couldnt update post");
+  }
 
   res.status(201).json({
-    message: "Delete successful",
-    blogPost: blogPost.toJSON(),
+    message: "Update successful",
+    blogPost: updatedPost.toJSON(),
   });
 };
