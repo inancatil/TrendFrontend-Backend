@@ -5,7 +5,7 @@ import { authorize } from "../middleware/authorize";
 
 const blogPostRouter = Router();
 
-blogPostRouter.get("/", authorize(), blogPostController.getBlogPosts);
+blogPostRouter.get("/", blogPostController.getBlogPosts);
 
 /*
 check("prop") controllerda tanımlı olan objenin prop larında hangisinin validate
