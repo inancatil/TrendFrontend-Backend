@@ -17,7 +17,7 @@ blogPostRouter.post(
   blogPostController.createBlogPost
 );
 
-blogPostRouter.patch(
+blogPostRouter.put(
   "/:bpid",
   authorize(),
   blogPostController.blogPostSchema,
