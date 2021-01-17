@@ -8,7 +8,7 @@ export interface IBlogPost extends Document {
   content: string;
   imageUrl: string;
   author: mongoose.Types.ObjectId | IUser;
-  date: string;
+  date: Date;
   tags: mongoose.Types.ObjectId[] | ITag[];
   category: mongoose.Types.ObjectId | null | ICategory;
 }
@@ -17,7 +17,7 @@ const blogPostSchema: Schema = new Schema({
   content: { type: String, required: true },
   imageUrl: { type: String },
   author: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
-  date: { type: String, required: true },
+  date: { type: Date, required: true },
   tags: [{ type: mongoose.Types.ObjectId, ref: "Tag" }],
   category: {
     type: mongoose.Types.ObjectId,

@@ -107,7 +107,6 @@ export const deleteCategory = async (
       { session }
     );
 
-    //#endregion
     await session.commitTransaction();
   } catch (error) {
     return next("Something went wrong, couldnt delete category");
