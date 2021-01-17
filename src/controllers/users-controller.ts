@@ -115,3 +115,16 @@ export function setTokenCookie(res: Response, token: string) {
   };
   res.cookie("refreshToken", token, cookieOptions);
 }
+
+export function createNewUser(req: Request, res: Response, next: NextFunction) {
+  const { email, password, role } = req.body;
+  //add check here
+
+  userService
+    .createNewUser(email, password, role)
+    .then((...user) => res.json(user))
+    .catch((e) => {
+      return next(e);
+    });
+  return next;
+}

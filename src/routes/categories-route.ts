@@ -25,7 +25,7 @@ categoriesRouter.post(
 
 categoriesRouter.delete(
   "/:pcid",
-  authorize(),
+  authorize(["Admin"]),
   categoriesController.deleteCategory
 );
 

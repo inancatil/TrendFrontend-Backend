@@ -5,6 +5,12 @@ import { authorize } from "../middleware/authorize";
 const usersRouter = Router();
 
 usersRouter.post(
+  "/create-user",
+  authorize(["Admin"]),
+  usersController.createNewUser
+);
+
+usersRouter.post(
   "/authenticate",
   usersController.authenticateSchema,
   usersController.authenticate

@@ -26,7 +26,7 @@ blogPostRouter.put(
 
 blogPostRouter.delete(
   "/:bpid",
-  authorize(),
+  authorize(["Admin"]),
   blogPostController.deleteBlogPostById
 );
 

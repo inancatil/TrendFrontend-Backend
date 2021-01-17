@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import User, { IUser } from "../models/user-model";
 import RefreshToken from "../models/refreshToken-model";
+import { IRole } from "../helpers/role";
 
 export {
   authenticate,
@@ -11,6 +12,7 @@ export {
   getAll,
   getById,
   getRefreshTokens,
+  createNewUser,
 };
 
 async function authenticate(
@@ -127,6 +129,21 @@ function randomTokenString() {
 }
 
 function basicDetails(user: IUser) {
-  const { id, name, email, blogPosts } = user;
-  return { id, name, email, blogPosts };
+  const { id, name, email, role } = user;
+  return { id, name, email, role };
+}
+
+async function createNewUser(email: string, password: string, role: IRole) {
+  const user = new User({
+    name: email,
+    email: email,
+    blogPosts: [],
+    password: bcrypt.hashSync(password, 10),
+    role: role,
+  });
+  await user.save();
+
+  return {
+    ...basicDetails(user!),
+  };
 }
