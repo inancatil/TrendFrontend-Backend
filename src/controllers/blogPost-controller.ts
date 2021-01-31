@@ -228,7 +228,6 @@ export const updateBlogPost = async (
   } catch (error) {
     return next("Something went wrong. Couldn't find category id.");
   }
-
   if (categoryId && !category) {
     return next("Couldn't find category id.");
   }
@@ -264,6 +263,11 @@ export const updateBlogPost = async (
     // Sets `name` and unsets all other properties
     doc!.overwrite(updatedPost);
     await doc!.save({ session });
+
+    if (category) {
+      category.blogPosts.push(updatedPost._id);
+      await category.save({ session });
+    }
 
     await session.commitTransaction();
   } catch (error) {
