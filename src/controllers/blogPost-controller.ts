@@ -164,14 +164,12 @@ export const deleteBlogPostById = async (
   try {
     category = await Category.findById(blogPost.category);
   } catch (error) {
-    return next(
-      "Sometihng went wrong. Couldn't delete blog post from category."
-    );
+    return next("Sometihng went wrong. Couldn't find blog post from category.");
   }
 
-  if (!category) {
-    return next("Couldn't delete blog post from category.");
-  }
+  // if (!category) {
+  //   return next("Couldn't delete blog post from category.");
+  // }
   //#endregion
 
   try {
@@ -194,7 +192,9 @@ export const deleteBlogPostById = async (
       ),
       1
     );
-    await category?.save({ session });
+    if (category) {
+      await category.save({ session });
+    }
 
     //#endregion
     await session.commitTransaction();
