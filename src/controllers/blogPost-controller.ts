@@ -40,19 +40,19 @@ export const getBlogPostByTitle = async (
   next: NextFunction
 ) => {
 
-  const blogPostId: string = req.params.bptitle;
+  const blogPostTitle: string = req.params.bptitle;
 
   let blogPost;
   try {
     const session = await mongoose.startSession();
     session.startTransaction();
-    blogPost = await BlogPost.findOne({ _id: blogPostId }, {}, { session })
+    blogPost = await BlogPost.findOne({ url: blogPostTitle }, {}, { session })
       .populate({ path: "author", select: ["id", "name"] })
       .populate({ path: "category", select: ["id", "name"] })
       .populate({ path: "tags", select: ["id", "name"] });
 
     const viewCount = blogPost?.viewCount ? blogPost.viewCount + 1 : 1;
-    const x = await BlogPost.update({ _id: blogPostId }, { $set: { viewCount } },
+    const x = await BlogPost.update({ url: blogPostTitle }, { $set: { viewCount } },
       { session, upsert: true })
 
     await session.commitTransaction();
@@ -287,27 +287,33 @@ export const updateBlogPost = async (
       { session }
     );
 
-    //might be improved. Not sure 100% working
-    updatedPost = await BlogPost.findOneAndUpdate({ _id: blogPostId }, {
-      title,
-      content,
-      imageUrl,
-      author,
-      date,
-      tags: existingTags.concat(newTags),
-      category,
-    }, { session, useFindAndModify: true })
+    const curPostDetails = await BlogPost.findOne({ _id: blogPostId }, {}, { session });
+    const numOfTitles = await checkIfTitleExists(title);
 
-    const oldCatId = updatedPost?.category;
+    await BlogPost.updateOne({ _id: blogPostId }, {
+      $set: {
+        url: curPostDetails!.title !== title ? titleToUrlFormat(title, numOfTitles) : curPostDetails!.url,
+        title,
+        content,
+        imageUrl,
+        author,
+        date,
+        tags: existingTags.concat(newTags),
+        category
+      }
+    }, { session, upsert: true })
+    //might be improved. Not sure 100% working
+
+    const oldCatId = curPostDetails?.category;
     if (oldCatId) {
       await Category.updateOne({ _id: oldCatId },
-        { $pullAll: { blogPosts: [updatedPost!._id] } },
+        { $pullAll: { blogPosts: [curPostDetails!._id] } },
         { session }
       );
     }
 
     if (category) {
-      category.blogPosts.push(updatedPost!._id);
+      category.blogPosts.push(curPostDetails!._id);
       await category.save({ session });
     }
 

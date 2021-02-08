@@ -9,7 +9,7 @@ export const correctResponse = (obj: any) => {
 };
 
 export const titleToUrlFormat = (title: string, count: number): string => {
-  const url = title.replace(/[^a-zA-Z ]/g, "").trimEnd().replace(/\s/g, "-").toLowerCase();
+  const url = title.replace(/[^a-zA-Z0-9 ]/g, "").trimEnd().replace(/\s/g, "-").toLowerCase();
   if (count > 0) return `${url}-${count}`
   return url
 }
