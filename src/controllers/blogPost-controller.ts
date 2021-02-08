@@ -9,6 +9,7 @@ import Category, { ICategory } from "../models/category-model";
 import Tag from "../models/tag-model";
 import Joi from "joi";
 import { validateRequest } from "../middleware/validate-request";
+import { titleToUrlFormat } from "../utils";
 
 export const getBlogPosts = async (
   req: Request,
@@ -33,6 +34,40 @@ export const getBlogPosts = async (
   });
 };
 
+export const getBlogPostByTitle = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+
+  const blogPostId: string = req.params.bptitle;
+
+  let blogPost;
+  try {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+    blogPost = await BlogPost.findOne({ _id: blogPostId }, {}, { session })
+      .populate({ path: "author", select: ["id", "name"] })
+      .populate({ path: "category", select: ["id", "name"] })
+      .populate({ path: "tags", select: ["id", "name"] });
+
+    const viewCount = blogPost?.viewCount ? blogPost.viewCount + 1 : 1;
+    const x = await BlogPost.update({ _id: blogPostId }, { $set: { viewCount } },
+      { session, upsert: true })
+
+    await session.commitTransaction();
+  } catch (e) {
+    return next("Something went wrong,1 Couldnt find posts");
+  }
+
+  if (!blogPost) {
+    return next("Couldnt find posts");
+  }
+  return res.json({
+    blogPost,
+  });
+};
+
 export function blogPostSchema(
   req: Request,
   res: Response,
@@ -53,7 +88,7 @@ export const createBlogPost = async (
   next: NextFunction
 ) => {
   const { title, content, imageUrl, author, date, tags, categoryId } = req.body;
-  console.log(req.body);
+
   //#region find and select user
   let user: IUser | null;
   try {
@@ -95,7 +130,11 @@ export const createBlogPost = async (
         }),
       { session }
     );
+
+    const numOfTitles = await checkIfTitleExists(title);
+
     createdBlogPost = new BlogPost({
+      url: titleToUrlFormat(title, numOfTitles),
       title,
       content,
       imageUrl,
@@ -103,6 +142,7 @@ export const createBlogPost = async (
       date,
       tags: existingTags.concat(newTags),
       category,
+      viewCount: 0
     });
 
     const _createdBP = await createdBlogPost.save({ session });
@@ -281,3 +321,8 @@ export const updateBlogPost = async (
     blogPost: updatedPost,
   });
 };
+
+const checkIfTitleExists = async (title: string): Promise<number> => {
+  const x = await BlogPost.find({ title })
+  return x.length
+}
