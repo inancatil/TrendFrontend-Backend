@@ -1,4 +1,4 @@
-import mongoose from "mongoose";
+import mongoose, { isValidObjectId } from "mongoose";
 
 import { NextFunction, Request, Response } from "express";
 import { validationResult } from "express-validator";
@@ -232,8 +232,7 @@ export const updateBlogPost = async (
     return next("Couldn't find category id.");
   }
   //#endregion
-
-  let updatedPost: any;
+  let updatedPost: any = {}
   try {
     const session = await mongoose.startSession();
     session.startTransaction();
@@ -247,8 +246,9 @@ export const updateBlogPost = async (
         }),
       { session }
     );
-    //author aslında yanlış formatta geldiği için güncellemiyor ama orayı update etmediğimiz için çalışıyor.
-    updatedPost = new BlogPost({
+
+    //might be improved. Not sure 100% working
+    updatedPost = await BlogPost.findOneAndUpdate({ _id: blogPostId }, {
       title,
       content,
       imageUrl,
@@ -256,16 +256,18 @@ export const updateBlogPost = async (
       date,
       tags: existingTags.concat(newTags),
       category,
-    });
+    }, { session, useFindAndModify: true })
 
-    const doc = await BlogPost.findOne({ _id: blogPostId });
-
-    // Sets `name` and unsets all other properties
-    doc!.overwrite(updatedPost);
-    await doc!.save({ session });
+    const oldCatId = updatedPost?.category;
+    if (oldCatId) {
+      await Category.updateOne({ _id: oldCatId },
+        { $pullAll: { blogPosts: [updatedPost!._id] } },
+        { session }
+      );
+    }
 
     if (category) {
-      category.blogPosts.push(updatedPost._id);
+      category.blogPosts.push(updatedPost!._id);
       await category.save({ session });
     }
 
@@ -276,6 +278,6 @@ export const updateBlogPost = async (
 
   res.status(201).json({
     message: "Update successful",
-    blogPost: updatedPost.toJSON(),
+    blogPost: updatedPost,
   });
 };
