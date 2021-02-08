@@ -52,7 +52,7 @@ export const getBlogPostByTitle = async (
       .populate({ path: "tags", select: ["id", "name"] });
 
     const viewCount = blogPost?.viewCount ? blogPost.viewCount + 1 : 1;
-    const x = await BlogPost.update({ url: blogPostTitle }, { $set: { viewCount } },
+    const x = await BlogPost.updateOne({ url: blogPostTitle }, { $set: { viewCount } },
       { session, upsert: true })
 
     await session.commitTransaction();
@@ -301,7 +301,7 @@ export const updateBlogPost = async (
         tags: existingTags.concat(newTags),
         category
       }
-    }, { session, upsert: true })
+    }, { session })
     //might be improved. Not sure 100% working
 
     const oldCatId = curPostDetails?.category;
