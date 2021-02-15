@@ -20,7 +20,13 @@ async function authenticate(
   password: string,
   ipAddress: string
 ) {
-  const user = await User.findOne({ email });
+  //find user by email or name
+  let user: any = {};
+  if (email.includes("@")) {
+    user = await User.findOne({ email });
+  } else {
+    user = await User.findOne({ name: email });
+  }
 
   if (!user || !bcrypt.compareSync(password, user.password)) {
     throw "Username or password is incorrect";
@@ -129,13 +135,18 @@ function randomTokenString() {
 }
 
 function basicDetails(user: IUser) {
-  const { id, name, email, role } = user;
-  return { id, name, email, role };
+  const { id, name, email, role, blogPosts } = user;
+  return { id, name, email, role, blogPosts };
 }
 
-async function createNewUser(email: string, password: string, role: IRole) {
+async function createNewUser(
+  name: string,
+  email: string,
+  password: string,
+  role: IRole
+) {
   const user = new User({
-    name: email,
+    name: name,
     email: email,
     blogPosts: [],
     password: bcrypt.hashSync(password, 10),
